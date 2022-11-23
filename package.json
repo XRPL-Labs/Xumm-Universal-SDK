@@ -1,0 +1,79 @@
+{
+  "name": "xumm",
+  "version": "1.0.0",
+  "description": "One Xumm SDK to rule them all (browser, backend, xApp)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prepare": "npm run clean && npm run lint && npm run test && npm run build && npm run browserify",
+    "clean": "rm -rf dist",
+    "build": "tsc",
+    "buildsample": "mkdir -p ./sample/dist; cp ./dist/browser.min.js ./sample/dist/",
+    "serve": "npm run build && npm run browserify && serve -C -n -p 3001 ./",
+    "watch": "tsc -w",
+    "inspect": "clear && npm run build && node --inspect dist/samples/sample.js",
+    "browserify": "browserify --standalone Xumm -r ./dist/index.js:Xumm |sed 's/\\(exports.Xumm = Xumm;\\)/\\1 module.exports = Xumm;/g' > dist/browser.js && npm run minify",
+    "browserify-watch": "watchify --standalone Xumm -r ./dist/index.js:Xumm --verbose -o 'cat -|sed \"s/\\(exports.Xumm = Xumm;\\)/\\1 module.exports = Xumm;/g\" > dist/browser.js'",
+    "minify": "cat dist/browser.js | terser --compress --mangle > dist/browser.min.js",
+    "dev": "DEBUG=xumm* nodemon sample/index.mjs",
+    "test": "DEBUG=xumm:tests* jest --ci",
+    "test-verbose": "DEBUG=xumm:tests* jest --ci --verbose",
+    "lint": "eslint"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "dist/browser.js",
+    "dist/browser.min.js"
+  ],
+  "dependencies": {
+    "nodemon": "^2.0.20",
+    "xumm-js-pkce": "^1.0.0",
+    "xumm-oauth2-pkce": "^2.5.0",
+    "xumm-sdk": "^1.6.2",
+    "xumm-xapp-sdk": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.12",
+    "@types/node": "^12.12.55",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
+    "browserify": "^16.5.2",
+    "eslint": "^7.27.0",
+    "jest": "^26.4.2",
+    "serve": "^14.1.2",
+    "terser": "^5.3.4",
+    "ts-jest": "^26.3.0",
+    "typescript": "^4.1.0",
+    "watchify": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:XRPL-Labs/XummUniversalSdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/XRPL-Labs/XummUniversalSdk/issues"
+  },
+  "homepage": "https://github.com/XRPL-Labs/XummUniversalSdk/#readme",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "keywords": [
+    "xrp",
+    "xrpl",
+    "ledger",
+    "xumm",
+    "sdk",
+    "pkce",
+    "oauth2",
+    "client",
+    "authorization",
+    "flow",
+    "auth"
+  ],
+  "nodemonConfig": {
+    "ignore": [
+      "test/*"
+    ],
+    "delay": 750
+  }
+}
