@@ -42,6 +42,9 @@
         xumm.on('destination', data => {
           console.log('xapp-destination@' + _instance, data.destination?.name, data.destination?.address, data?.reason)
         })
+
+        const pong = await xumm.ping()
+        console.log('pong@' + _instance, pong)
       }
 
       run();

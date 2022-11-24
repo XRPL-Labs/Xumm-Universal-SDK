@@ -19,6 +19,19 @@ import { EventEmitter } from "events";
  *     > https://.../sample/
  */
 
+/**
+ * TODO:
+ *    - Add all PKCE methods
+ *    - Add all PKCE events
+ * 
+ *    -- BOTH XummSdk and XummSdkJwt
+ *      - Add all SDK methods
+ *      - Add all SDK events
+ * 
+ *    - Add all xAppSDK methods
+ *    - Add all xAppSDK events
+ */
+
 enum Runtimes {
   cli = "cli",
   browser = "browser",
@@ -178,9 +191,8 @@ export class Xumm extends EventEmitter {
   }
 
   /**
-   * xApp SDkK
+   * xApp
    */
-
   public getOttData(): xAppOttData | undefined {
     return _ott;
   }
@@ -199,6 +211,17 @@ export class Xumm extends EventEmitter {
     }
   }
 
+  /**
+   * SDK
+   */
+  public ping() {
+    // TODO: What if not JWT but regular?
+    return _classes?.XummSdkJwt?.ping();
+  }
+
+  /**
+   * Handlers (setup)
+   */
   private async handleXappEvents() {
     // Always attach event listeners
     // So no:  && !_initialized.xApp
