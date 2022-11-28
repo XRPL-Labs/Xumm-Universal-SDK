@@ -1,5 +1,14 @@
-import type { XummSdk, XummSdkJwt, xAppOttData } from "xumm-sdk";
-import type { XummPkce } from "xumm-oauth2-pkce";
+import type {
+  XummSdk,
+  XummSdkJwt,
+  xAppOttData,
+  Payload,
+  JwtUserdata,
+  Storage,
+  Push,
+} from "xumm-sdk";
+import { XummPkce } from "xumm-oauth2-pkce";
+import type { XummPkceEvent, ResolvedFlow } from "xumm-oauth2-pkce";
 import type {
   xApp,
   xAppEvent,
@@ -23,13 +32,41 @@ import { EventEmitter } from "events";
  * TODO:
  *    - Add all PKCE methods
  *    - Add all PKCE events
- * 
+ *
  *    -- BOTH XummSdk and XummSdkJwt
  *      - Add all SDK methods
  *      - Add all SDK events
- * 
+ *
  *    - Add all xAppSDK methods
  *    - Add all xAppSDK events
+ */
+
+/**
+ * TODO: Test:
+ *    - Vue
+ *    - Vite, SSR
+ *    - React
+ *    - Remix
+ *    - ...
+ */
+
+/**
+ * Scenarios:
+ *   - xApp: apikey:        » Go ahead
+ *   - xApp: apikey+secret:             » ERROR
+ *   - xApp: jwt:           » Go ahead
+ * »»» Load SDKJWT + XAPP (UI INTERACTION)
+ *
+ *   - Browser: apikey      » PKCE
+ *   - Browser: api+secret              » ERROR
+ *   - Browser: jwt:        » Go ahead
+ * »»» Load SDKJWT
+ *
+ *   - CLI: apikey                      » ERROR
+ *   - CLI: jwt             » Go ahead
+ *   - CLI: apikey+secret   » Go ahead
+ * »»» Load SDK
+ *
  */
 
 enum Runtimes {
@@ -87,7 +124,12 @@ const runtime = (Object.keys(_runtime) as (keyof typeof Runtimes)[]).filter(
 
 export declare interface Xumm {
   on<U extends keyof xAppEvent>(event: U, listener: xAppEvent[U]): this;
+  on<U extends keyof XummPkceEvent>(event: U, listener: XummPkceEvent[U]): this;
   off<U extends keyof xAppEvent>(event: U, listener: xAppEvent[U]): this;
+  off<U extends keyof XummPkceEvent>(
+    event: U,
+    listener: XummPkceEvent[U]
+  ): this;
 }
 
 const readyPromises: Promise<any>[] = [];
@@ -106,8 +148,40 @@ let _jwtData: Record<string, any> = {};
 
 let instance = 0;
 
+interface Environment {
+  user: ReturnType<XummSdk["ping"]>;
+  ott: ReturnType<XummSdkJwt["getOttData"]>;
+  jwt: Record<string, any>;
+  openid: Record<string, any>;
+  bearer: string;
+}
+
+interface Helpers {
+  ping: ReturnType<XummSdk["ping"]>;
+  getCuratedAssets: ReturnType<XummSdk["getCuratedAssets"]>;
+  getKycStatus: ReturnType<XummSdk["getKycStatus"]>;
+  getTransaction: ReturnType<XummSdk["getTransaction"]>;
+  verifyUserTokens: ReturnType<XummSdk["verifyUserTokens"]>;
+  getRates: ReturnType<XummSdk["getRates"]>;
+}
+
+/**
+ * This is where the magic happens
+ */
+
 export class Xumm extends EventEmitter {
-  private instance = "?";
+  private instance = "0";
+  private jwtCredential = false
+
+  public runtime: Runtime = _runtime;
+
+  public environment?: Environment;
+  public payload?: Payload;
+  public xapp?: xApp;
+  public userdata?: JwtUserdata;
+  public backendstore?: Storage;
+  public helpers?: Helpers;
+  public push?: Push;
 
   constructor(apiKeyOrJwt: string, apiSecretOrOtt?: string) {
     super();
@@ -119,19 +193,12 @@ export class Xumm extends EventEmitter {
       console.log("Constructed Xumm", { runtime });
     }
 
-    if (runtime.indexOf("xapp") > -1) {
-      if (typeof apiKeyOrJwt !== "string" || !uuidv4re.test(apiKeyOrJwt)) {
-        throw new Error(
-          "Running in xApp, constructor requires first param. to be Xumm API Key"
-        );
-      }
-      if (!_classes?.xApp) {
-        Object.assign(_classes, {
-          xApp: new (require("xumm-xapp-sdk").xApp)(),
-        });
-      }
-      readyPromises.push(this.handleXappEvents());
+    if (typeof apiKeyOrJwt === 'string' && apiKeyOrJwt.split('.').length === 3) {
+      this.jwtCredential = true
+      _jwt = apiKeyOrJwt
+    }
 
+    const initOttJwtRuntime = () => {
       if (!_classes?.XummSdkJwt) {
         Object.assign(_classes, {
           XummSdkJwt: new (require("xumm-sdk").XummSdkJwt)(apiKeyOrJwt),
@@ -141,71 +208,133 @@ export class Xumm extends EventEmitter {
       }
     }
 
-    // if (runtime.indexOf("cli") > -1) {
-    //   if (!_classes?.XummSdk) {
-    //     Object.assign(_classes, {
-    //       XummSdk: new (require("xumm-sdk").XummSdk)(
-    //         apiKeyOrJwt,
-    //         apiSecretOrOtt
-    //       ),
-    //     });
-    //   }
-    //   if (!_classes?.XummSdkJwt) {
-    //     Object.assign(_classes, {
-    //       // XummSdkJwt: new XummSdkJwt(apiKeyOrJwt, apiSecretOrOtt),
-    //     });
-    //   }
-    // }
+    if (_runtime.xapp) {
+      /**
+       * xApp
+       */
+      if (typeof apiKeyOrJwt !== "string" || !(uuidv4re.test(apiKeyOrJwt) || this.jwtCredential)) {
+        throw new Error(
+          "Running in xApp, constructor requires first param. to be Xumm API Key or JWT"
+        );
+      }
+      if (!_classes?.xApp) {
+        Object.assign(_classes, {
+          xApp: new (require("xumm-xapp-sdk").xApp)(),
+        });
+      }
+      readyPromises.push(this.handleXappEvents());
 
-    // if (runtime.indexOf("browser") > -1) {
-    //   if (!_classes?.XummSdk) {
-    //     Object.assign(_classes, {
-    //       XummSdk: new (require("xumm-sdk").XummSdk)(
-    //         apiKeyOrJwt,
-    //         apiSecretOrOtt
-    //       ),
-    //     });
-    //   }
-    //   if (!_classes?.XummSdkJwt) {
-    //     Object.assign(_classes, {
-    //       XummSdkJwt: new (require("xumm-sdk").XummSdkJwt)(
-    //         apiKeyOrJwt,
-    //         apiSecretOrOtt
-    //       ),
-    //     });
-    //   }
-    //   if (!_classes?.XummPkce) {
-    //     Object.assign(_classes, {
-    //       XummPkce: new (require("xumm-oauth2-pkce").XummPkce)(
-    //         apiKeyOrJwt,
-    //         apiSecretOrOtt
-    //       ),
-    //     });
-    //   }
-    // }
+      initOttJwtRuntime()
+    } else if (_runtime.browser) {
+      /**
+       * Browser (JWT, PKCE?)
+       */
+       if (typeof apiKeyOrJwt !== "string" || !(uuidv4re.test(apiKeyOrJwt) || this.jwtCredential)) {
+        throw new Error(
+          "Running in browser, constructor requires first param. to be Xumm API Key or JWT"
+        );
+      }
+      if (!_classes?.XummPkce) {
+        Object.assign(_classes, {
+          XummPkce: new XummPkce(apiKeyOrJwt, {
+            implicit: true,
+          }),
+        });
+
+        if (_classes.XummPkce) {
+          if (this.jwtCredential) {
+            initOttJwtRuntime()
+          } else {
+            readyPromises.push(this.handlePkceEvents());
+            readyPromises.push(
+              new Promise((resolve) => {
+                _classes.XummPkce?.on("success", () => {
+                  _classes.XummPkce?.state()?.then((state) => {
+                    // state: jwt, me, sdk
+                    if (state?.sdk) {
+                      Object.assign(_classes, { XummSdkJwt: state.sdk });
+                    }
+                    if (state?.jwt) {
+                      _jwt = state.jwt
+                      console.log('...handleOttJwt')
+                      this.handleOttJwt()
+                    }
+                    resolve(state);
+                  });
+                });
+              })
+            );
+          }
+        }
+      }
+    } else if (_runtime.cli) {
+      /**
+       * CLI, Node / ...
+       */
+      if (typeof apiKeyOrJwt !== "string") {
+        throw new Error(
+          "Running CLI, constructor needs first param. to be Xumm API Key / raw JWT"
+        );
+      } else {
+        if (uuidv4re.test(apiKeyOrJwt)) {
+          // API Key
+          if (
+            typeof apiSecretOrOtt !== "string" ||
+            !uuidv4re.test(apiSecretOrOtt)
+          ) {
+            throw new Error(
+              "Running CLI, constructor first param. is API Key, but second param. isn't a valid API Secret"
+            );
+          }
+        }
+        if (
+          !uuidv4re.test(apiKeyOrJwt) &&
+          apiKeyOrJwt.split(".").length !== 3
+        ) {
+          throw new Error(
+            "Running CLI, constructor first param. not a valid JWT, nor a valid API Key"
+          );
+        }
+
+        // All fine
+        if (!_classes?.XummSdk) {
+          Object.assign(_classes, {
+            XummSdk: new (require("xumm-sdk").XummSdk)(
+              apiKeyOrJwt,
+              apiSecretOrOtt
+            ),
+          });
+        }
+      }
+    }
   }
 
-  public async ready(): Promise<void> {
+  public async ready(): Promise<this> {
     await Promise.all(readyPromises);
-    return;
+    return this;
   }
 
   /**
    * xApp
    */
-  public getOttData(): xAppOttData | undefined {
+  public async getOttData(): Promise<xAppOttData | undefined> {
+    if (this.jwtCredential || _jwt !== '') return
+    await Promise.all(readyPromises);
     return _ott;
   }
 
-  public getJwt(): string {
+  public async getJwt(): Promise<string> {
+    await Promise.all(readyPromises);
     return _jwt;
   }
 
-  public getJwtData(): Record<string, any> {
+  public async getJwtData(): Promise<Record<string, any>> {
+    await Promise.all(readyPromises);
     return _jwtData;
   }
 
-  public selectDestination(): Promise<boolean | Error> | void {
+  public async selectDestination(): Promise<boolean | Error | void> {
+    await Promise.all(readyPromises);
     if (_classes?.xApp) {
       return _classes.xApp.selectDestination();
     }
@@ -214,9 +343,27 @@ export class Xumm extends EventEmitter {
   /**
    * SDK
    */
-  public ping() {
+  public async ping(): Promise<ReturnType<XummSdk["ping"]> | undefined> {
     // TODO: What if not JWT but regular?
-    return _classes?.XummSdkJwt?.ping();
+    await Promise.all(readyPromises);
+    return (_classes?.XummSdkJwt || _classes?.XummSdk)?.ping();
+  }
+
+  /**
+   * PKCE
+   */
+  public async authorize(): Promise<ResolvedFlow | undefined> {
+    console.log('Authorize')
+    return _classes?.XummPkce?.authorize();
+  }
+
+  public async state(): Promise<ResolvedFlow | undefined> {
+    return _classes?.XummPkce?.state();
+  }
+
+  public async logout() {
+    Object.assign(_classes, { XummSdkJwt: undefined });
+    return _classes?.XummPkce?.logout();
   }
 
   /**
@@ -240,6 +387,24 @@ export class Xumm extends EventEmitter {
     }
   }
 
+  private async handlePkceEvents() {
+    // Always attach event listeners
+    // So no:  && !_initialized.XummPkce
+    if (_classes?.XummPkce) {
+      _initialized.XummPkce = true;
+
+      _classes.XummPkce.on("retrieved", () => {
+        this.emit("retrieved");
+      });
+      _classes.XummPkce.on("success", () => {
+        this.emit("success");
+      });
+      _classes.XummPkce.on("error", (data: Error) => {
+        this.emit("error", data);
+      });
+    }
+  }
+
   /**
    * Xumm SDK
    */
@@ -247,11 +412,15 @@ export class Xumm extends EventEmitter {
     if (_classes?.XummSdkJwt && !_initialized.XummSdkJwt) {
       _initialized.XummSdkJwt = true;
 
-      readyPromises.push(_classes.XummSdkJwt.getOttData());
-      readyPromises.push(_classes.XummSdkJwt.getJwt());
+      const doNotFetchJwtOtt = this.jwtCredential || _jwt !== ''
 
-      const ott = await _classes.XummSdkJwt.getOttData();
-      const jwt = await _classes.XummSdkJwt.getJwt();
+      if (!doNotFetchJwtOtt) {
+        readyPromises.push(_classes.XummSdkJwt.getOttData());
+        readyPromises.push(_classes.XummSdkJwt.getJwt());
+      }
+
+      const ott = !doNotFetchJwtOtt ? await _classes.XummSdkJwt.getOttData() : null;
+      const jwt = !doNotFetchJwtOtt ? await _classes.XummSdkJwt.getJwt() : _jwt;
 
       if (ott) {
         _ott = ott;
