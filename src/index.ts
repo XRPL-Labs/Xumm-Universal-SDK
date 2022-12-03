@@ -6,7 +6,6 @@ import type {
   JwtUserdata,
   Storage,
   Push,
-  SdkTypes,
 } from "xumm-sdk";
 import { XummPkce } from "xumm-oauth2-pkce";
 import type { XummPkceEvent, ResolvedFlow } from "xumm-oauth2-pkce";
@@ -16,12 +15,6 @@ import type {
   qrEventData,
   payloadEventData,
   destinationEventData,
-  xAppActionNavigate,
-  xAppActionOpenSignRequest,
-  xAppActionOpenBrowser,
-  xAppActionTxDetails,
-  xAppActionClose,
-  AnyJson,
 } from "xumm-xapp-sdk";
 import { EventEmitter } from "events";
 
@@ -33,19 +26,6 @@ import { EventEmitter } from "events";
  *   npm run dev (watch, nodemon dist/samples/index.js)
  *   ngrok start dev (local :3001 to https:// dev URL)
  *     > https://.../sample/
- */
-
-/**
- * TODO:
- *    - Add all PKCE methods
- *    - Add all PKCE events
- *
- *    -- BOTH XummSdk and XummSdkJwt
- *      - Add all SDK methods
- *      - Add all SDK events
- *
- *    - Add all xAppSDK methods
- *    - Add all xAppSDK events
  */
 
 /**
@@ -73,7 +53,6 @@ import { EventEmitter } from "events";
  *   - CLI: jwt             » Go ahead
  *   - CLI: apikey+secret   » Go ahead
  * »»» Load SDK
- *
  */
 
 enum Runtimes {
@@ -102,7 +81,6 @@ const uuidv4re = new RegExp(
 );
 
 const _classes: Classes = {};
-
 const _env = typeof process === "object" && process ? process?.env || {} : {};
 
 Object.assign(_runtime, {
@@ -141,6 +119,7 @@ export declare interface Xumm {
 
 const readyPromises: Promise<any>[] = [];
 
+// If we want to simulate an overall async state / delay
 // readyPromises.push(
 //   new Promise((resolve) => {
 //     setTimeout(function () {
@@ -212,54 +191,50 @@ let _me: Partial<ResolvedFlow["me"]> = {};
 
 let instance = 0;
 
-// interface Helpers {
-//   ping: SdkTypes.ping;
-//   getCuratedAssets: SdkTypes.getCuratedAssets;
-//   getKycStatus: SdkTypes.getKycStatus;
-//   getTransaction: SdkTypes.getTransaction;
-//   verifyUserTokens: SdkTypes.verifyUserTokens;
-//   getRates: SdkTypes.getRates;
-// }
-
 interface Environment {
-  // public user?: ReturnType<XummSdk["ping"]>;
-  ott?: ReturnType<XummSdkJwt["getOttData"]>;
-  jwt?: {
-    client_id: string;
-    scope?: string;
-    state?: string;
-    aud: string;
-    sub: string;
-    email?: string;
-    app_uuidv4: string;
-    app_name: string;
-    payload_uuidv4?: string;
-    usertoken_uuidv4?: string;
-    network_type?: string;
-    network_endpoint?: string;
-    iat: number;
-    exp: number;
-    iss: string;
-    usr?: string;
-    net?: string;
-    [key: string]: any;
-  };
-  openid?: {
-    sub: string;
-    email: string;
-    picture: string;
-    account: string;
-    name: string;
-    domain?: string;
-    blocked: boolean;
-    source?: string;
-    kycApproved: boolean;
-    proSubscription: boolean;
-    networkType: string;
-    networkEndpoint: string;
-    [key: string]: any;
-  };
-  bearer?: string;
+  ott?: Promise<xAppOttData | undefined>;
+  jwt?: Promise<
+    | {
+        client_id: string;
+        scope?: string;
+        state?: string;
+        aud: string;
+        sub: string;
+        email?: string;
+        app_uuidv4: string;
+        app_name: string;
+        payload_uuidv4?: string;
+        usertoken_uuidv4?: string;
+        network_type?: string;
+        network_endpoint?: string;
+        iat: number;
+        exp: number;
+        iss: string;
+        usr?: string;
+        net?: string;
+        [key: string]: any;
+      }
+    | undefined
+  >;
+  openid?: Promise<
+    | {
+        sub: string;
+        email: string;
+        picture: string;
+        account: string;
+        name: string;
+        domain?: string;
+        blocked: boolean;
+        source?: string;
+        kycApproved: boolean;
+        proSubscription: boolean;
+        networkType: string;
+        networkEndpoint: string;
+        [key: string]: any;
+      }
+    | undefined
+  >;
+  bearer?: Promise<string>;
 }
 
 class UnifiedUserData {
@@ -317,12 +292,22 @@ export class Xumm extends EventEmitter {
   public runtime: Runtime = _runtime;
 
   public user: UnifiedUserData;
-  public environment?: Partial<Environment>;
+  public environment: Environment;
   public payload?: Promisified<Payload>;
   public xapp?: Promisified<xApp>;
   public userstore?: Promisified<JwtUserdata>;
   public backendstore?: Promisified<Storage>;
-  public helpers?: Promisified<Pick<XummSdkJwt, 'ping' | 'getCuratedAssets' | 'getKycStatus' | 'getTransaction' | 'verifyUserTokens' | 'getRates'>>;
+  public helpers?: Promisified<
+    Pick<
+      XummSdkJwt,
+      | "ping"
+      | "getCuratedAssets"
+      | "getKycStatus"
+      | "getTransaction"
+      | "verifyUserTokens"
+      | "getRates"
+    >
+  >;
   public push?: Promisified<Push>;
 
   constructor(apiKeyOrJwt: string, apiSecretOrOtt?: string) {
@@ -342,42 +327,6 @@ export class Xumm extends EventEmitter {
       this.jwtCredential = true;
       _jwt = apiKeyOrJwt;
     }
-
-    /**
-     * xApp
-     */
-    // const getOttData = async (): Promise<xAppOttData | undefined> => {
-    //   if (this.jwtCredential || _jwt !== "") return;
-    //   await Promise.all(readyPromises);
-    //   return _ott;
-    // };
-
-    // const getJwt = async (): Promise<string> => {
-    //   await Promise.all(readyPromises);
-    //   return _jwt;
-    // };
-
-    // const getJwtData = async (): Promise<Record<string, any>> => {
-    //   await Promise.all(readyPromises);
-    //   return _jwtData;
-    // };
-
-    // const selectDestination = async (): Promise<boolean | Error | void> => {
-    //   await Promise.all(readyPromises);
-    //   if (_classes?.xApp) {
-    //     return _classes.xApp.selectDestination();
-    //   }
-    // };
-
-    /**
-     * PKCE
-     */
-    // const pkceState = (): Promise<ResolvedFlow | undefined> | undefined => {
-    //   return _classes?.XummPkce?.state();
-    // };
-
-    // TEMP
-    // Object.assign(this, { _temp_pkceState: pkceState });
 
     /**
      * Handlers (setup)
@@ -593,10 +542,21 @@ export class Xumm extends EventEmitter {
      * Bootstrap class properties
      */
     this.user = new UnifiedUserData();
-
+    this.environment = {
+      jwt: Asyncify(() => _jwtData) as Environment["jwt"],
+      ott: Asyncify(() => _ott),
+      openid: Asyncify(() => _me) as Environment["openid"],
+      bearer: Asyncify(() => _jwt),
+    };
     /**
      * Xumm SDK mapped
      */
+    this.helpers = Proxify(
+      Asyncify(
+        () => (_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt
+      )
+    );
+
     this.push = Proxify(
       Asyncify(
         () =>
@@ -604,9 +564,28 @@ export class Xumm extends EventEmitter {
             .Push
       )
     );
-    this.helpers = Proxify(
+
+    this.payload = Proxify(
       Asyncify(
-        () => (_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt
+        () =>
+          ((_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt)
+            .payload
+      )
+    );
+
+    this.userstore = Proxify(
+      Asyncify(
+        () =>
+          ((_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt)
+            .jwtUserdata
+      )
+    );
+
+    this.backendstore = Proxify(
+      Asyncify(
+        () =>
+          ((_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt)
+            .storage
       )
     );
 
@@ -615,9 +594,6 @@ export class Xumm extends EventEmitter {
      */
     const xapp = _classes?.xApp;
     if (xapp) this.xapp = Proxify(xapp);
-
-    // this.push = Asyncify<Push | undefined>(() => (_classes?.XummSdk || _classes?.XummSdkJwt)?.Push)
-    // this.xapp = Asyncify<xApp | undefined>(() => _classes?.xApp)
   }
 
   /**
