@@ -1,9 +1,6 @@
 import { Xumm } from '../dist/index.js';
 
-console.log('...');
+console.log('MJS version');
 
-const xumm = new Xumm('702e3097-8fd8-4aa0-9c5a-c705d886eab0', '702e3097-8fd8-4aa0-9c5a-c705d886eab0');
-console.log(xumm)
-
-// const xumm_repl = new Xumm('702e3097-8fd8-4aa0-9c5a-c705d886eab0', '702e3097-8fd8-4aa0-9c5a-c705d886eab0');
-// console.log(xumm_repl)
+const xumm = new Xumm('some-api-key', 'some-secret');
+console.log('ping', await xumm.ping())
