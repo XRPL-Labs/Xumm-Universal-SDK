@@ -1,6 +1,6 @@
 {
   "name": "xumm",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "One Xumm SDK to rule them all (browser, backend, xApp)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,9 +20,9 @@
     "test-verbose": "DEBUG=xumm:tests* jest --ci --verbose",
     "lint": "eslint"
   },
-  "engines" : { 
-    "npm" : ">=7 <9",
-    "node" : ">=14 <19"
+  "engines": {
+    "npm": ">=7 <9",
+    "node": ">=14 <19"
   },
   "files": [
     "dist/**/*.js",
