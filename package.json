@@ -53,12 +53,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com:XRPL-Labs/XummUniversalSdk.git"
+    "url": "git://github.com:XRPL-Labs/Xumm-Universal-SDK.git"
   },
   "bugs": {
-    "url": "https://github.com/XRPL-Labs/XummUniversalSdk/issues"
+    "url": "https://github.com/XRPL-Labs/Xumm-Universal-SDK/issues"
   },
-  "homepage": "https://github.com/XRPL-Labs/XummUniversalSdk/#readme",
+  "homepage": "https://github.com/XRPL-Labs/Xumm-Universal-SDK/#readme",
   "license": "MIT",
   "readmeFilename": "README.md",
   "keywords": [
