@@ -33,7 +33,7 @@
   "dependencies": {
     "nodemon": "^2.0.20",
     "xumm-js-pkce": "^1.0.0",
-    "xumm-oauth2-pkce": "^2.6.0",
+    "xumm-oauth2-pkce": "^2.7.0",
     "xumm-sdk": "^1.7.0",
     "xumm-xapp-sdk": "^1.4.3"
   },
