@@ -294,7 +294,7 @@ export class Xumm extends EventEmitter {
   public user: UnifiedUserData;
   public environment: Environment;
   public payload?: Promisified<Payload>;
-  public xapp?: Promisified<xApp>;
+  public xapp?: xApp;
   public userstore?: Promisified<JwtUserdata>;
   public backendstore?: Promisified<Storage>;
   public helpers?: Promisified<
@@ -593,7 +593,7 @@ export class Xumm extends EventEmitter {
      * Xumm xApp SDK: UI lib.
      */
     const xapp = _classes?.xApp;
-    if (xapp) this.xapp = Proxify(xapp);
+    if (xapp) this.xapp = xapp;
   }
 
   /**
