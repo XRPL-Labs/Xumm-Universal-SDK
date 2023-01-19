@@ -501,7 +501,7 @@ export class Xumm extends EventEmitter {
           if (this.jwtCredential) {
             initOttJwtRuntime();
           } else {
-            setImmediate(() => this.emit('retrieving'))
+            setTimeout(() => this.emit('retrieving'), 0)
             const handlePkceState = (
               resolve: (value: ResolvedFlow | undefined) => void
             ) => {
@@ -639,9 +639,7 @@ export class Xumm extends EventEmitter {
     const xapp = _classes?.xApp;
     if (xapp) this.xapp = xapp;
 
-    setImmediate(() => {
-      Promise.all(readyPromises).then(() => this.emit('ready'))
-    })
+    setTimeout(() => Promise.all(readyPromises).then(() => this.emit('ready')), 0)
   }
 
   /**
