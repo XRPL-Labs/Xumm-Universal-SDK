@@ -16,7 +16,15 @@ import type {
   payloadEventData,
   destinationEventData,
 } from "xumm-xapp-sdk";
+
 import { EventEmitter } from "events";
+import { env } from "process";
+
+export interface UniversalSdkEvent {
+  logout: () => void;
+  ready: () => void;
+  retrieving: () => void;
+}
 
 /**
  * Development?
@@ -108,8 +116,10 @@ const runtime = (Object.keys(_runtime) as (keyof typeof Runtimes)[]).filter(
 );
 
 export declare interface Xumm {
+  on<U extends keyof UniversalSdkEvent>(event: U, listener: UniversalSdkEvent[U]): this;
   on<U extends keyof xAppEvent>(event: U, listener: xAppEvent[U]): this;
   on<U extends keyof XummPkceEvent>(event: U, listener: XummPkceEvent[U]): this;
+  off<U extends keyof UniversalSdkEvent>(event: U, listener: UniversalSdkEvent[U]): this;
   off<U extends keyof xAppEvent>(event: U, listener: xAppEvent[U]): this;
   off<U extends keyof XummPkceEvent>(
     event: U,
@@ -235,6 +245,8 @@ interface Environment {
     | undefined
   >;
   bearer?: Promise<string>;
+  retrieving: Promise<void>
+  ready: Promise<void>
 }
 
 class UnifiedUserData {
@@ -320,12 +332,36 @@ export class Xumm extends EventEmitter {
       console.log("Constructed Xumm", { runtime });
     }
 
+    let jwtExpired = false
     if (
       typeof apiKeyOrJwt === "string" &&
       apiKeyOrJwt.split(".").length === 3
     ) {
-      this.jwtCredential = true;
-      _jwt = apiKeyOrJwt;
+      let _testJwtData
+      try {
+        // Check validity
+        _testJwtData = JSON.parse(atob(apiKeyOrJwt.split(".")?.[1]));
+      } catch (e) {
+        // e
+        // Parse error
+      }
+
+      if (Date.now() >= _testJwtData.exp * 1000) {
+        jwtExpired = true
+        const appId = _testJwtData?.app_uuidv4 ?? _testJwtData?.client_id ?? _testJwtData?.aud ?? ''
+        apiKeyOrJwt = appId
+        console.log('JWT expired, falling back to API KEY: ' + appId)
+        if (_runtime.cli || _runtime.xapp) {
+          const error = new Error('JWT Expired, cannot fall back to API credential: in CLI/xApp environment')
+          this.emit('error', error)
+          throw error
+        }
+      }
+
+      if (!jwtExpired) {
+        this.jwtCredential = true;
+        _jwt = apiKeyOrJwt;
+      }
     }
 
     /**
@@ -465,6 +501,7 @@ export class Xumm extends EventEmitter {
           if (this.jwtCredential) {
             initOttJwtRuntime();
           } else {
+            setImmediate(() => this.emit('retrieving'))
             const handlePkceState = (
               resolve: (value: ResolvedFlow | undefined) => void
             ) => {
@@ -481,6 +518,7 @@ export class Xumm extends EventEmitter {
                 resolve(state);
               });
             };
+
             readyPromises.push(handlePkceEvents());
             readyPromises.push(
               new Promise(
@@ -528,12 +566,16 @@ export class Xumm extends EventEmitter {
 
         // All fine
         if (!_classes?.XummSdk) {
-          Object.assign(_classes, {
-            XummSdk: new (require("xumm-sdk").XummSdk)(
-              apiKeyOrJwt,
-              apiSecretOrOtt
-            ),
-          });
+          if (this.jwtCredential) {
+            initOttJwtRuntime();
+          } else {
+            Object.assign(_classes, {
+              XummSdk: new (require("xumm-sdk").XummSdk)(
+                apiKeyOrJwt,
+                apiSecretOrOtt
+              ),
+            });
+          }
         }
       }
     }
@@ -547,6 +589,8 @@ export class Xumm extends EventEmitter {
       ott: Asyncify(() => _ott),
       openid: Asyncify(() => _me) as Environment["openid"],
       bearer: Asyncify(() => _jwt),
+      retrieving: new Promise(resolve => this.on('retrieving', () => resolve())),
+      ready: new Promise(resolve => this.on('ready', () => resolve())),
     };
     /**
      * Xumm SDK mapped
@@ -594,6 +638,10 @@ export class Xumm extends EventEmitter {
      */
     const xapp = _classes?.xApp;
     if (xapp) this.xapp = xapp;
+
+    setImmediate(() => {
+      Promise.all(readyPromises).then(() => this.emit('ready'))
+    })
   }
 
   /**
@@ -606,6 +654,7 @@ export class Xumm extends EventEmitter {
 
   public async logout() {
     Object.assign(_classes, { XummSdkJwt: undefined });
+    this.emit("logout");
     return _classes?.XummPkce?.logout();
   }
 
