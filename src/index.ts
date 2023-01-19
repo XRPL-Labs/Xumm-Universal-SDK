@@ -566,9 +566,7 @@ export class Xumm extends EventEmitter {
 
         // All fine
         if (this.jwtCredential) {
-          if (!_classes?.XummSdkJwt) {
-            initOttJwtRuntime();
-          }
+          initOttJwtRuntime();
         } else {
           if (!_classes?.XummSdk) {
             Object.assign(_classes, {
