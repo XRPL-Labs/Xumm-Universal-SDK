@@ -534,17 +534,22 @@ export class Xumm extends EventEmitter {
             };
 
             readyPromises.push(handlePkceEvents());
+            // The promise below does not count against the "ready" event
+            const pkceRetrieverResolver = new Promise(
+              (resolve: (value: ResolvedFlow | undefined) => void) => {
+                _classes.XummPkce?.on("retrieved", () => {
+                  handlePkceState(resolve);
+                });
+                _classes.XummPkce?.on("success", () => {
+                  handlePkceState(resolve);
+                });
+              }
+            );
+
             readyPromises.push(
-              new Promise(
-                (resolve: (value: ResolvedFlow | undefined) => void) => {
-                  _classes.XummPkce?.on("retrieved", () => {
-                    handlePkceState(resolve);
-                  });
-                  _classes.XummPkce?.on("success", () => {
-                    handlePkceState(resolve);
-                  });
-                }
-              )
+              Object.assign(pkceRetrieverResolver, {
+                promiseType: "pkceRetrieverResolver",
+              })
             );
           }
         }
@@ -656,7 +661,14 @@ export class Xumm extends EventEmitter {
     if (xapp) this.xapp = xapp;
 
     setTimeout(
-      () => Promise.all(readyPromises).then(() => this.emit("ready")),
+      () =>
+        Promise.all(
+          readyPromises.filter(
+            (p) =>
+              (p as Record<string, any>)?.promiseType !==
+              "pkceRetrieverResolver"
+          )
+        ).then(() => this.emit("ready")),
       0
     );
   }
