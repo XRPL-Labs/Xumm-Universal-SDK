@@ -253,6 +253,8 @@ interface Environment {
   bearer?: Promise<string>;
   retrieving: Promise<void>;
   ready: Promise<void>;
+  success: Promise<void>;
+  retrieved: Promise<void>;
 }
 
 class UnifiedUserData {
@@ -606,10 +608,14 @@ export class Xumm extends EventEmitter {
       ott: Asyncify(() => _ott),
       openid: Asyncify(() => _me) as Environment["openid"],
       bearer: Asyncify(() => _jwt),
+      ready: new Promise((resolve) => this.on("ready", () => resolve())),
+      success: new Promise((resolve) => this.on("success", () => resolve())),
+      retrieved: new Promise((resolve) =>
+        this.on("retrieved", () => resolve())
+      ),
       retrieving: new Promise((resolve) =>
         this.on("retrieving", () => resolve())
       ),
-      ready: new Promise((resolve) => this.on("ready", () => resolve())),
     };
     /**
      * Xumm SDK mapped
@@ -660,13 +666,24 @@ export class Xumm extends EventEmitter {
 
     setTimeout(
       () =>
-        Promise.all(
-          readyPromises.filter(
+        Promise.all([
+          ...readyPromises.filter(
             (p) =>
               (p as Record<string, any>)?.promiseType !==
               "pkceRetrieverResolver"
-          )
-        ).then(() => this.emit("ready")),
+          ),
+          /**
+           * If PKCE flow: wait for `ready` till account is known
+           */
+          new Promise((resolve: any) => {
+            if (_classes?.XummPkce) {
+              this.user.account.then(() => resolve());
+              _classes.XummPkce?.on("loggedout", () => resolve());
+            } else {
+              resolve();
+            }
+          }),
+        ]).then(() => this.emit("ready")),
       0
     );
   }
