@@ -439,8 +439,6 @@ export class Xumm extends EventEmitter {
 
         if (ott) {
           _ott = ott;
-          // TODO: DISABLE
-          // console.log("xapp ottdata", _ott);
         }
 
         if (jwt) {
