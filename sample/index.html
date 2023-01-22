@@ -10,6 +10,8 @@
     <div class="container mt-2 px-4">
       <h1>Hello, world!</h1>
 
+      <div>State: <span id="state">...</span></div>
+
       <h1>
         <a href="/sample/index.html">Reload</a>
       </h1>
@@ -50,8 +52,6 @@
         xumm.environment.bearer?.then(r => console.log('bearer', r))
         xumm.environment.openid?.then(r => console.log('openid', r))
         xumm.environment.ott?.then(r => console.log('ott', r))
-        xumm.environment.retrieving?.then(r => console.log('retrieving (promise)', r))
-        xumm.environment.ready?.then(r => console.log('ready (promise)', r))
 
         // xumm.payload?.create({TransactionType: 'SignIn'}).then(r => console.log('payload', r))
         // xumm.helpers.getCuratedAssets().then(r => console.log('xumm.helpers.getCuratedAssets', r))
@@ -62,16 +62,6 @@
 
         // Expired JWT to test with:
         // const xumm = await new Xumm('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiI0N2ZkZmNiNy04MzYyLTQ3ZmUtOWE4OS1hMmVmYzU1ZTg2ZDUiLCJzdGF0ZSI6ImU1MWNlOGEwMDc0NjNiYjFiMzY5ZWNmYTZkOWI2MmZkZDBiNmEwYmMxN2UyODlhNDQxNDkzMGMzNzIxZGM0MjgzZTYwYjUzZDdiMmM1YjhlMWM3YWYxOGMzMDQ5ZGUwMzEyZDRkZjY3YzgwMGRlZmE1ZDNlOThhNWQxNGY0MDgxIiwic2NvcGUiOiJYdW1tUGtjZSIsImF1ZCI6IjQ3ZmRmY2I3LTgzNjItNDdmZS05YTg5LWEyZWZjNTVlODZkNSIsInN1YiI6InJ3aWV0c2V2TEZnOFhTbUczYkVaekZlaW4xZzhSQnFXRFoiLCJlbWFpbCI6IjQ3ZmRmY2I3LTgzNjItNDdmZS05YTg5LWEyZWZjNTVlODZkNStyd2lldHNldkxGZzhYU21HM2JFWnpGZWluMWc4UkJxV0RaQHh1bW0ubWUiLCJhcHBfdXVpZHY0IjoiNDdmZGZjYjctODM2Mi00N2ZlLTlhODktYTJlZmM1NWU4NmQ1IiwiYXBwX25hbWUiOiJTb21lIFN1cGVyIENvb2wgQXBwIiwicGF5bG9hZF91dWlkdjQiOiIwNDM0NjkxNS0wYzEyLTRiZDQtOTczMS0xMWRhZDQ2ZDE2ODEiLCJ1c2VydG9rZW5fdXVpZHY0IjoiZDhiYjQ0NGUtYTk2Yi00OTc3LTkyNjUtNWJlYzE3NDkwMjlkIiwibmV0d29ya190eXBlIjoiTUFJTk5FVCIsIm5ldHdvcmtfZW5kcG9pbnQiOiJ3c3M6Ly94cnBsY2x1c3Rlci5jb20iLCJpYXQiOjE2Njk1OTI4ODIsImV4cCI6MTY2OTY3OTI4MiwiaXNzIjoiaHR0cHM6Ly9vYXV0aDIueHVtbS5hcHAifQ.SUCoM5Y3R2GyeMC9KLqj8RuhlYUPqhpczdEwAnIOgYhPKaxfUDGU-yYCiX5JB5qWC6zveg2fJ_u1smG1Eh6k7jBqt-WNsf-kUayzwlOmZjj7DSSEJG8itEWFCnjUeFVWU9hyZZSCf_wO-4C_tT0-eWoK4VLhmHJrXOoTyH9xpCLzGDpk-rLxRDNyxQwbjSJCAU0cQfipAMzrjOddqdUgqjyNyxysy1DZrNNfppuWC9LfZaTfauQdZPZeaXAeMeKJmdQ_LrSI-UCO_CzWFyWeSkgN61NOCyz7Cc8S023P99DKaf9ofLD99FcTtVy-RYr3uOn3Kt_JEhDhaZJfZT4I6EWMq0qNfAlHlIZiQBI4Jq7ScQB4my25dIY4-vc4Prmjk_LAkW-fTC2wjleLDbqi27LJpeMkxR_evGUWJamodz8l4uhNTB_CrgceHikKW0IBPOSWrCnJsAjjRgq_73fg6dJ06KgfQoKU25sxnyShtak4e7VaBBM92MEmmkHugpJY')
-
-        console.log(xumm.runtime)
-
-        xumm.on("retrieving", () => {
-          console.log("retrieving (event)")
-        })
-
-        xumm.on("ready", () => {
-          console.log("ready (event)")
-        })
 
         if (xumm.runtime.xapp) {
           document.getElementById('xapp').style.display = 'block'
@@ -125,6 +115,20 @@
 
           console.log('b-flow')
         }
+
+        console.log(xumm.runtime)
+
+        xumm.on("retrieving", () => console.log("retrieving (event)"))
+        xumm.on("ready", () => console.log("ready (event)"))
+
+        xumm.environment.retrieving?.then(r => {
+          document.getElementById('state').innerText = 'retrieving'
+          console.log('retrieving (promise)', r)
+        })
+        xumm.environment.ready?.then(r => {
+          document.getElementById('state').innerText = 'ready'
+          console.log('ready (promise)', r)
+        })
 
         // console.log('xumm.user.account', await xumm.user.account)
         // console.log('xumm.user.picture', await xumm.user.picture)
