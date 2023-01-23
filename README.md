@@ -2,7 +2,9 @@
 
 One SDK for frontend (browser), backend (node/ts) & xApp (SDK & frontend interaction).
 
-### Warning! This is very much a work in progress!
+Documentation: https://xumm.readme.io/v1.0/docs/sdk-intro-npm-cdn
+
+### `{BETA}` Warning! This is very much a work in progress!
 
 # Some notes
 
