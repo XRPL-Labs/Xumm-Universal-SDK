@@ -2,6 +2,8 @@
 
 One SDK for frontend (browser), backend (node/ts) & xApp (SDK & frontend interaction).
 
+### Documentation (WIP): https://xumm.readme.io/v1.0/docs
+
 ### Warning! This is very much a work in progress!
 
 # Some notes
