@@ -1,10 +1,10 @@
-# Xumm (Universal SDK)
+# Xumm (Universal SDK)  [![npm version](https://badge.fury.io/js/xumm.svg)](https://www.npmjs.com/xumm) [![GitHub Actions NodeJS status](https://github.com/XRPL-Labs/Xumm-Universal-SDK/workflows/NodeJS/badge.svg?branch=main)](https://github.com/XRPL-Labs/Xumm-Universal-SDK/actions)
 
 One SDK for frontend (browser), backend (node/ts) & xApp (SDK & frontend interaction).
 
 ### Documentation (WIP): https://xumm.readme.io/v1.0/docs
 
-### Warning! This is very much a work in progress!
+### `{BETA}` Warning! This is very much a work in progress!
 
 # Some notes
 
