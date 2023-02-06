@@ -1,6 +1,6 @@
 {
   "name": "xumm",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "description": "One Xumm SDK to rule them all (browser, backend, xApp)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
