@@ -326,6 +326,7 @@ export class Xumm extends EventEmitter {
       | "getTransaction"
       | "verifyUserTokens"
       | "getRates"
+      | "getNftokenDetail"
     >
   >;
   public push?: Promisified<Push>;
