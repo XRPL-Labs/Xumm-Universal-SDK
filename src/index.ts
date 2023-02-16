@@ -8,7 +8,11 @@ import type {
   Push,
 } from "xumm-sdk";
 import { XummPkce } from "xumm-oauth2-pkce";
-import type { XummPkceEvent, ResolvedFlow } from "xumm-oauth2-pkce";
+import type {
+  XummPkceEvent,
+  ResolvedFlow,
+  XummProfile,
+} from "xumm-oauth2-pkce";
 import type {
   xApp,
   xAppEvent,
@@ -246,6 +250,7 @@ interface Environment {
         proSubscription: boolean;
         networkType: string;
         networkEndpoint: string;
+        profile?: XummProfile;
         [key: string]: any;
       }
     | undefined
@@ -299,6 +304,13 @@ class UnifiedUserData {
   );
   public proSubscription = Asyncify<boolean | undefined>(
     () => _me?.proSubscription ?? _ott?.account_info?.proSubscription
+  );
+  public profile = Asyncify<XummProfile | undefined>(
+    () =>
+      _me?.profile ??
+      (_ott?.account_info?.profile?.slug
+        ? (_ott.account_info.profile as XummProfile)
+        : undefined)
   );
 }
 
