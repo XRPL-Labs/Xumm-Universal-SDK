@@ -424,12 +424,17 @@ export class Xumm extends EventEmitter {
         const ott = !doNotFetchJwtOtt
           ? await _classes.XummSdkJwt.getOttData()
           : null;
+
         const jwt = !doNotFetchJwtOtt
           ? await _classes.XummSdkJwt.getJwt()
           : _jwt;
 
         if (ott) {
           _ott = ott;
+
+          // Mock, so browser code works in xApp as well
+          this.emit("retrieved");
+          this.emit("success");
         }
 
         if (jwt) {
