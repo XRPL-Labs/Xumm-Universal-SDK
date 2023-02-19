@@ -285,6 +285,9 @@ class UnifiedUserData {
         ? (_ott.account_info.profile as XummProfile)
         : undefined)
   );
+  public token = Asyncify<string | null>(
+    () => _jwtData?.usertoken_uuidv4 ?? null
+  );
 }
 
 /**
