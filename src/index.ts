@@ -40,33 +40,6 @@ export interface UniversalSdkEvent {
  *     > https://.../sample/
  */
 
-/**
- * TODO: Test:
- *    - Vue
- *    - Vite, SSR
- *    - React
- *    - Remix
- *    - ...
- */
-
-/**
- * Scenarios:
- *   - xApp: apikey:        » Go ahead
- *   - xApp: apikey+secret:             » ERROR
- *   - xApp: jwt:           » Go ahead
- * »»» Load SDKJWT + XAPP (UI INTERACTION)
- *
- *   - Browser: apikey      » PKCE
- *   - Browser: api+secret              » ERROR
- *   - Browser: jwt:        » Go ahead
- * »»» Load SDKJWT
- *
- *   - CLI: apikey                      » ERROR
- *   - CLI: jwt             » Go ahead
- *   - CLI: apikey+secret   » Go ahead
- * »»» Load SDK
- */
-
 enum Runtimes {
   cli = "cli",
   browser = "browser",
