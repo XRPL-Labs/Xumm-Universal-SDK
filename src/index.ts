@@ -474,7 +474,7 @@ export class Xumm extends EventEmitter {
     _jwt = "";
     _jwtData = {};
     _me = {};
-    _initialized.XummSdkJwt = false
+    _initialized.XummSdkJwt = false;
     // _initialized.XummPkce = false
 
     /**
@@ -498,7 +498,7 @@ export class Xumm extends EventEmitter {
       }
     };
 
-    this.handlePkceEvents()
+    this.handlePkceEvents();
 
     /**
      * Xumm SDK
@@ -529,7 +529,7 @@ export class Xumm extends EventEmitter {
           this.emit("retrieved");
           this.emit("success");
         }
-        
+
         if (jwt) {
           _jwt = jwt;
           try {
@@ -693,9 +693,9 @@ export class Xumm extends EventEmitter {
   public async authorize(): Promise<ResolvedFlow | undefined | Error> {
     // console.log("Authorize");
     try {
-      return await _classes?.XummPkce?.authorize()
+      return await _classes?.XummPkce?.authorize();
     } catch (e) {
-      return e as Error
+      return e as Error;
     }
   }
 
@@ -718,7 +718,7 @@ export class Xumm extends EventEmitter {
       _classes.XummPkce.on("error", errorHandler);
     }
 
-    return
+    return;
   }
 
   public async logout() {
