@@ -1,0 +1,71 @@
+<html lang="en">
+  <body>
+    <h1 id="accountaddress">...</h1>
+    <button id="signinbutton" onclick="xumm.authorize()">Login</button>
+    <button id="logoutbutton" onclick="xumm.logout()">Logout</button>
+    <button id="payloadbutton">Payload</button>
+
+    <pre id="profile"></pre>
+    <pre id="jwt"></pre>
+    <pre id="openid"></pre>
+    <pre id="bearer"></pre>
+    <pre id="payload"></pre>
+        
+    <script src="../dist/browser.js"></script>
+    <script>
+      var xumm = new Xumm('47fdfcb7-8362-47fe-9a89-a2efc55e86d5')
+      window.xumm = xumm
+
+      xumm.on("ready", () => console.log("Ready (e.g. hide loading state of page)"))
+      
+      // We rely on promises in the `success` event: fired again if a user
+      // logs out and logs back in again (resets all promises)
+      xumm.on("success", async () => {
+        xumm.user.account.then(account => {
+          document.getElementById('accountaddress').innerText = account
+        })
+        xumm.user.profile.then(profile => {
+          document.getElementById('profile').innerHTML = JSON.stringify(profile, null, 2)
+        })
+        xumm.environment.jwt.then(data => {
+          document.getElementById('jwt').innerHTML = JSON.stringify(data, null, 2)
+        })
+        xumm.environment.openid.then(data => {
+          document.getElementById('openid').innerHTML = JSON.stringify(data, null, 2)
+        })
+        xumm.environment.bearer.then(data => {
+          document.getElementById('bearer').innerHTML = JSON.stringify(data, null, 2)
+        })
+      })
+
+      xumm.on("logout", async () => {
+        document.getElementById('accountaddress').innerText = '...'
+      })
+
+      xumm.on("error", e => {
+        console.log('error', e.message)
+      })
+
+      document.getElementById('payloadbutton').onclick = () => {
+        xumm.payload.create({
+          TransactionType: 'Payment',
+          Destination: 'rfHn6cB5mmqZ6fHZ4fdemCDSxqLTijgMwo',
+          Amount: String(1_000_000)
+        }).then(data => {
+          document.getElementById('payload').innerHTML = JSON.stringify(data, null, 2)
+        })
+      }
+
+      xumm.on('payload', data => {
+        console.log(data.reason)
+        console.log(data.uuid)
+        if (data?.uuid) {
+        xumm.payload.get(data.uuid).then(payloadResult => {
+            console.log(payloadResult)
+        })
+        }
+      })
+
+    </script>
+  </body>
+</html>

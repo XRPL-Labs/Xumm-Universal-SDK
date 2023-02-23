@@ -1,0 +1,49 @@
+<html lang="en">
+  <body>
+    <h1 id="accountaddress">...</h1>
+    <h1 id="usertoken">...</h1>
+    <img id="profileimg" src="about:blank" />
+    <pre id="usertoken"></pre>
+    <pre id="payloadresponse"></pre>
+    <br />
+    <br />
+    <button onclick="genpayload()">Payload</button>
+       
+    <script type="module">
+      import '../dist/browser.js'
+      const xumm = new Xumm('8525e32b-1bd0-4839-af2f-f794874a80b0')
+         
+      xumm.on("success", () => {
+        xumm.user.profile.then(profile => {
+          document.getElementById('accountaddress').innerText = JSON.stringify(profile, null, 2)
+        })
+        xumm.user.account.then(account => {
+          document.getElementById('profileimg').setAttribute('src', `https://xumm.app/avatar/${account}.png`)        
+        })
+        xumm.user.token.then(token => {
+          document.getElementById('usertoken').innerText = '--' + token
+        })
+        xumm.environment.jwt.then(jwt => {
+           document.getElementById('usertoken').innerText = JSON.stringify(jwt, null, 2)
+        })
+
+        window.genpayload = function () {
+          xumm.payload.create({
+            TransactionType: 'Payment',
+            Destination: 'rfHn6cB5mmqZ6fHZ4fdemCDSxqLTijgMwo',
+            Amount: String(1)
+          }).then(payload => xumm.xapp.openSignRequest(payload))
+        }
+
+        xumm.on('payload', data => {
+          document.getElementById('payloadresponse').innerText = JSON.stringify(data, null, 2)
+          if (data?.uuid) {
+            xumm.payload.get(data.uuid).then(payloadResult => {
+              document.getElementById('payloadresponse').innerText = JSON.stringify(payloadResult, null, 2)
+            })
+          }
+        })
+      })
+    </script>
+  </body>
+</html>

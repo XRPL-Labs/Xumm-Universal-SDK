@@ -16,6 +16,8 @@
         <a href="/sample/index.html">Reload</a>
       </h1>
 
+      <button id="payload">Payload</button>
+
       <h2 id="xapp" style="display: none;" class="mt-4">
         <code class="h3" id="account">...</code>
         <button id="dpick">Destination Picker</button>
@@ -62,6 +64,22 @@
 
         // Expired JWT to test with:
         // const xumm = await new Xumm('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnRfaWQiOiI0N2ZkZmNiNy04MzYyLTQ3ZmUtOWE4OS1hMmVmYzU1ZTg2ZDUiLCJzdGF0ZSI6ImU1MWNlOGEwMDc0NjNiYjFiMzY5ZWNmYTZkOWI2MmZkZDBiNmEwYmMxN2UyODlhNDQxNDkzMGMzNzIxZGM0MjgzZTYwYjUzZDdiMmM1YjhlMWM3YWYxOGMzMDQ5ZGUwMzEyZDRkZjY3YzgwMGRlZmE1ZDNlOThhNWQxNGY0MDgxIiwic2NvcGUiOiJYdW1tUGtjZSIsImF1ZCI6IjQ3ZmRmY2I3LTgzNjItNDdmZS05YTg5LWEyZWZjNTVlODZkNSIsInN1YiI6InJ3aWV0c2V2TEZnOFhTbUczYkVaekZlaW4xZzhSQnFXRFoiLCJlbWFpbCI6IjQ3ZmRmY2I3LTgzNjItNDdmZS05YTg5LWEyZWZjNTVlODZkNStyd2lldHNldkxGZzhYU21HM2JFWnpGZWluMWc4UkJxV0RaQHh1bW0ubWUiLCJhcHBfdXVpZHY0IjoiNDdmZGZjYjctODM2Mi00N2ZlLTlhODktYTJlZmM1NWU4NmQ1IiwiYXBwX25hbWUiOiJTb21lIFN1cGVyIENvb2wgQXBwIiwicGF5bG9hZF91dWlkdjQiOiIwNDM0NjkxNS0wYzEyLTRiZDQtOTczMS0xMWRhZDQ2ZDE2ODEiLCJ1c2VydG9rZW5fdXVpZHY0IjoiZDhiYjQ0NGUtYTk2Yi00OTc3LTkyNjUtNWJlYzE3NDkwMjlkIiwibmV0d29ya190eXBlIjoiTUFJTk5FVCIsIm5ldHdvcmtfZW5kcG9pbnQiOiJ3c3M6Ly94cnBsY2x1c3Rlci5jb20iLCJpYXQiOjE2Njk1OTI4ODIsImV4cCI6MTY2OTY3OTI4MiwiaXNzIjoiaHR0cHM6Ly9vYXV0aDIueHVtbS5hcHAifQ.SUCoM5Y3R2GyeMC9KLqj8RuhlYUPqhpczdEwAnIOgYhPKaxfUDGU-yYCiX5JB5qWC6zveg2fJ_u1smG1Eh6k7jBqt-WNsf-kUayzwlOmZjj7DSSEJG8itEWFCnjUeFVWU9hyZZSCf_wO-4C_tT0-eWoK4VLhmHJrXOoTyH9xpCLzGDpk-rLxRDNyxQwbjSJCAU0cQfipAMzrjOddqdUgqjyNyxysy1DZrNNfppuWC9LfZaTfauQdZPZeaXAeMeKJmdQ_LrSI-UCO_CzWFyWeSkgN61NOCyz7Cc8S023P99DKaf9ofLD99FcTtVy-RYr3uOn3Kt_JEhDhaZJfZT4I6EWMq0qNfAlHlIZiQBI4Jq7ScQB4my25dIY4-vc4Prmjk_LAkW-fTC2wjleLDbqi27LJpeMkxR_evGUWJamodz8l4uhNTB_CrgceHikKW0IBPOSWrCnJsAjjRgq_73fg6dJ06KgfQoKU25sxnyShtak4e7VaBBM92MEmmkHugpJY')
+
+        document.getElementById('payload').onclick = () => {
+          console.log('payload')
+
+          xumm.payload.createAndSubscribe({
+            TransactionType: 'Payment',
+            Destination: 'rfHn6cB5mmqZ6fHZ4fdemCDSxqLTijgMwo',
+            Amount: String(1)
+          }, eventMessage => {
+            if (Object.keys(eventMessage.data).indexOf('signed') > -1) {
+              return eventMessage
+            }
+          })
+          .then(subscription => subscription.resolved)
+          .then(d => console.log('Payload resolved', d))
+        }
 
         if (xumm.runtime.xapp) {
           document.getElementById('xapp').style.display = 'block'
