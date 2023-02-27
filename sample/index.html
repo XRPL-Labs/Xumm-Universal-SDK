@@ -69,15 +69,26 @@
           console.log('payload')
 
           xumm.payload.createAndSubscribe({
-            TransactionType: 'Payment',
-            Destination: 'rfHn6cB5mmqZ6fHZ4fdemCDSxqLTijgMwo',
-            Amount: String(1)
+            txjson: {
+              TransactionType: 'Payment',
+              Destination: 'rfHn6cB5mmqZ6fHZ4fdemCDSxqLTijgMwo',
+              Amount: String(1) // Drops
+            }
           }, eventMessage => {
+            if (Object.keys(eventMessage.data).indexOf('opened') > -1) {
+              // Update the UI? The payload was opened.
+            }
             if (Object.keys(eventMessage.data).indexOf('signed') > -1) {
+              // The `signed` property is present, true (signed) / false (rejected)
               return eventMessage
             }
           })
-          .then(subscription => subscription.resolved)
+          .then(({ created, resolved }) => {
+            console.log('Payload URL:', created.next.always)
+            console.log('Payload QR:', created.refs.qr_png)
+
+            return resolved
+          })
           .then(d => console.log('Payload resolved', d))
         }
 
