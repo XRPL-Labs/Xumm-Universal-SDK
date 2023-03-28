@@ -534,6 +534,7 @@ export class Xumm extends EventEmitter {
           _jwt = jwt;
           try {
             _jwtData = JSON.parse(atob(_jwt.split(".")?.[1]));
+            this.emit("ready");
             // console.log("pkce/xapp jwtdata", _jwtData);
           } catch (e) {
             if (typeof console?.log !== "undefined") {
