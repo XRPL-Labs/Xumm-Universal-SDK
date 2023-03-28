@@ -456,15 +456,17 @@ export class Xumm extends EventEmitter {
           /**
            * If PKCE flow: wait for `ready` till account is known
            */
-          new Promise((resolve: any) => {
-            if (_classes?.XummPkce) {
-              this.user.account.then(() => resolve());
-              _classes.XummPkce?.on("loggedout", () => resolve());
-            } else {
-              resolve();
-            }
-          }),
-        ]).then(() => this.emit("ready")),
+          _runtime.xapp
+            ? Promise.resolve()
+            : new Promise((resolve: any) => {
+                if (_classes?.XummPkce) {
+                  this.user.account.then(() => resolve());
+                  _classes.XummPkce?.on("loggedout", () => resolve());
+                } else {
+                  resolve();
+                }
+              }),
+        ]).then(() => this.emit("ready")), // Constructor ready
       0
     );
   }
@@ -534,8 +536,6 @@ export class Xumm extends EventEmitter {
           _jwt = jwt;
           try {
             _jwtData = JSON.parse(atob(_jwt.split(".")?.[1]));
-            this.emit("ready");
-            // console.log("pkce/xapp jwtdata", _jwtData);
           } catch (e) {
             if (typeof console?.log !== "undefined") {
               if (!_runtime.cli)
@@ -592,7 +592,8 @@ export class Xumm extends EventEmitter {
           "Running in browser, constructor requires first param. to be Xumm API Key or JWT"
         );
       }
-      if (!_classes?.XummPkce) {
+
+      if (!_classes?.XummPkce && !_runtime.xapp) {
         Object.assign(_classes, {
           XummPkce: new XummPkce(this.apiKeyOrJwt, {
             implicit: true,
