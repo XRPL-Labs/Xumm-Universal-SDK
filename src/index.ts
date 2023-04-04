@@ -724,6 +724,9 @@ export class Xumm extends EventEmitter {
   }
 
   public async logout() {
+    if (_runtime.xapp) {
+      return;
+    }
     if (_runtime.browser && _me?.sub) {
       _classes?.XummPkce?.logout();
 
