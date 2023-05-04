@@ -22,7 +22,6 @@ import type {
 } from "xumm-xapp-sdk";
 
 import { EventEmitter } from "events";
-import { env } from "process";
 
 export interface UniversalSdkEvent {
   logout: () => void;
