@@ -552,7 +552,13 @@ export class Xumm extends EventEmitter {
     const initOttJwtRuntime = () => {
       if (!_classes?.XummSdkJwt) {
         Object.assign(_classes, {
-          XummSdkJwt: new (require("xumm-sdk").XummSdkJwt)(this.apiKeyOrJwt),
+          XummSdkJwt: new (require("xumm-sdk").XummSdkJwt)(
+            this.apiKeyOrJwt,
+            // Get OTT from UA if present, otherwise fall back to default behaviour
+            typeof _classes?.xApp?.getEnvironment !== "undefined"
+              ? _classes?.xApp?.getEnvironment()?.ott || undefined // Required as null breaks
+              : undefined
+          ),
         });
 
         readyPromises.push(handleOttJwt());
