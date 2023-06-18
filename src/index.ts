@@ -472,8 +472,17 @@ export class Xumm extends EventEmitter {
 
   private initialize(): void {
     _ott = undefined;
-    _jwt = "";
-    _jwtData = {};
+
+    if (
+      typeof this.apiKeyOrJwt === "string" &&
+      this.apiKeyOrJwt.split(".").length === 3 &&
+      _jwt === this.apiKeyOrJwt
+    ) {
+      // Keep JWT data, constructed with JWT
+    } else {
+      _jwt = "";
+      _jwtData = {};
+    }
     _me = {};
     _initialized.XummSdkJwt = false;
     // _initialized.XummPkce = false
@@ -535,6 +544,12 @@ export class Xumm extends EventEmitter {
           _jwt = jwt;
           try {
             _jwtData = JSON.parse(atob(_jwt.split(".")?.[1]));
+
+            if (doNotFetchJwtOtt && this.jwtCredential) {
+              // Mock, so success & retrieved events are fired as well.
+              setTimeout(() => this.emit("retrieved"), 0);
+              setTimeout(() => this.emit("success"), 0);
+            }
           } catch (e) {
             if (typeof console?.log !== "undefined") {
               if (!_runtime.cli)
