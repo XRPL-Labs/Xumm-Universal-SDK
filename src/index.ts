@@ -747,10 +747,31 @@ export class Xumm extends EventEmitter {
     if (_runtime.xapp) {
       return;
     }
-    if (_runtime.browser && _me?.sub) {
+
+    let downgradeJwtLogin = false;
+
+    if (
+      typeof this.apiKeyOrJwt === "string" &&
+      this.apiKeyOrJwt.split(".").length === 3 &&
+      _jwtData?.app_uuidv4 &&
+      this.jwtCredential
+    ) {
+      // Constructed with JWT, reset to application UUID for new auth
+      this.apiKeyOrJwt = _jwtData.app_uuidv4;
+      this.jwtCredential = false;
+      downgradeJwtLogin = true;
+      // Remove PKCE Thread for full re-init 
+      (window as any)._XummPkce = undefined;
+    }
+
+    if (_runtime.browser && (_me?.sub || downgradeJwtLogin)) {
       _classes?.XummPkce?.logout();
 
-      Object.assign(_classes, { XummSdkJwt: undefined, XummPkce: undefined });
+      Object.assign(_classes, {
+        XummSdk: undefined,
+        XummSdkJwt: undefined,
+        XummPkce: undefined,
+      });
 
       readyPromises.length = 0;
       this.jwtCredential = false;
