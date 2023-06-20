@@ -29,6 +29,11 @@ export interface UniversalSdkEvent {
   retrieving: () => void;
 }
 
+const fromBinary = (encoded: string) => {
+  // Fix browser atob UTF8 incompat
+  return Buffer.from(encoded, "base64").toString("base64");
+};
+
 /**
  * Development?
  *   npm run watch (tsc in watch mode)
@@ -342,7 +347,7 @@ export class Xumm extends EventEmitter {
       let _testJwtData;
       try {
         // Check validity
-        _testJwtData = JSON.parse(atob(this.apiKeyOrJwt.split(".")?.[1]));
+        _testJwtData = JSON.parse(fromBinary(this.apiKeyOrJwt.split(".")?.[1]));
       } catch (e) {
         // e
         // Parse error
@@ -543,7 +548,7 @@ export class Xumm extends EventEmitter {
         if (jwt) {
           _jwt = jwt;
           try {
-            _jwtData = JSON.parse(atob(_jwt.split(".")?.[1]));
+            _jwtData = JSON.parse(fromBinary(_jwt.split(".")?.[1]));
 
             if (doNotFetchJwtOtt && this.jwtCredential) {
               // Mock, so success & retrieved events are fired as well.
@@ -760,7 +765,7 @@ export class Xumm extends EventEmitter {
       this.apiKeyOrJwt = _jwtData.app_uuidv4;
       this.jwtCredential = false;
       downgradeJwtLogin = true;
-      // Remove PKCE Thread for full re-init 
+      // Remove PKCE Thread for full re-init
       (window as any)._XummPkce = undefined;
     }
 
