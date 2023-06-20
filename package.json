@@ -31,6 +31,7 @@
     "dist/browser.min.js"
   ],
   "dependencies": {
+    "buffer": "^6.0.3",
     "events": "^3.3.0",
     "nodemon": "^2.0.20",
     "xumm-js-pkce": "^1.0.0",

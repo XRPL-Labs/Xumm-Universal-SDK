@@ -21,6 +21,8 @@ import type {
   destinationEventData,
 } from "xumm-xapp-sdk";
 
+import { Buffer } from "buffer/";
+
 import { EventEmitter } from "events";
 
 export interface UniversalSdkEvent {
@@ -31,7 +33,7 @@ export interface UniversalSdkEvent {
 
 const fromBinary = (encoded: string) => {
   // Fix browser atob UTF8 incompat
-  return Buffer.from(encoded, "base64").toString("base64");
+  return Buffer.from(encoded, "base64").toString("utf8");
 };
 
 /**
