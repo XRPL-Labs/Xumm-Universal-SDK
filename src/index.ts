@@ -91,7 +91,10 @@ Object.assign(_runtime, {
 });
 
 Object.assign(_runtime, {
-  xapp: _runtime.browser && !!navigator.userAgent.match(/xumm\/xapp/i),
+  xapp:
+    _runtime.browser &&
+    (!!navigator.userAgent.match(/xumm\/xapp/i) ||
+      !!navigator.userAgent.match(/xAppBuilder/i)),
 });
 
 const runtime = (Object.keys(_runtime) as (keyof typeof Runtimes)[]).filter(
