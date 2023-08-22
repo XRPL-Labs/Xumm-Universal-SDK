@@ -21,7 +21,7 @@ import type {
   destinationEventData,
 } from "xumm-xapp-sdk";
 
-import { Buffer } from "buffer/";
+import { Buffer } from "buffer";
 
 import { EventEmitter } from "events";
 
