@@ -209,6 +209,7 @@ interface Environment {
         usertoken_uuidv4?: string;
         network_type?: string;
         network_endpoint?: string;
+        network_id?: number;
         iat: number;
         exp: number;
         iss: string;
@@ -232,6 +233,7 @@ interface Environment {
         proSubscription: boolean;
         networkType: string;
         networkEndpoint: string;
+        networkId?: number;
         profile?: XummProfile;
         [key: string]: any;
       }
@@ -275,8 +277,14 @@ class UnifiedUserData {
   public networkEndpoint = Asyncify<string | undefined>(
     () =>
       (_me as Record<string, string>)?.networkEndpoint ??
-      _jwtData.network_ndpoint ??
+      _jwtData.network_endpoint ??
       _ott?.nodewss
+  );
+  public networkId = Asyncify<number | undefined>(
+    () =>
+      (_me as Record<string, number>)?.networkId ??
+      _jwtData.network_id ??
+      _ott?.networkid
   );
   public blocked = Asyncify<boolean | undefined>(
     () => _me?.blocked ?? _ott?.account_info?.blocked
