@@ -21,7 +21,7 @@
     "lint": "eslint"
   },
   "engines": {
-    "npm": ">=7 <=9",
+    "npm": ">=7 <=10",
     "node": ">=14"
   },
   "files": [
