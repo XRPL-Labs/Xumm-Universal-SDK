@@ -17,6 +17,7 @@ import type {
   xApp,
   xAppEvent,
   qrEventData,
+  xAppNetworkSwitch,
   payloadEventData,
   destinationEventData,
 } from "xumm-xapp-sdk";
@@ -519,6 +520,9 @@ export class Xumm extends EventEmitter {
         });
         _classes.xApp.on("payload", (data: payloadEventData) => {
           this.emit("payload", data, this.instance);
+        });
+        _classes.xApp.on("networkswitch", (data: xAppNetworkSwitch) => {
+          this.emit("networkswitch", data, this.instance);
         });
         _classes.xApp.on("destination", (data: destinationEventData) => {
           this.emit("destination", data, this.instance);
