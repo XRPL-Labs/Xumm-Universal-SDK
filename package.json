@@ -34,11 +34,10 @@
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "xumm-oauth2-pkce": "^2.8.3",
-    "xumm-sdk": "^1.11.0",
+    "xumm-sdk": "^1.11.1",
     "xumm-xapp-sdk": "^1.7.2"
   },
   "devDependencies": {
-    "nodemon": "^2.0.20",
     "@types/jest": "^26.0.12",
     "@types/node": "^12.12.55",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
@@ -46,6 +45,7 @@
     "browserify": "^16.5.2",
     "eslint": "^7.27.0",
     "jest": "^26.4.2",
+    "nodemon": "^3.1.0",
     "serve": "^14.1.2",
     "terser": "^5.3.4",
     "ts-jest": "^26.3.0",
