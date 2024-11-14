@@ -11,7 +11,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        node-version: [14, 16, 18]
+        group: [default]
+        node-version: [16, 18, 20]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
