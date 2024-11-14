@@ -34,7 +34,7 @@
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "xumm-oauth2-pkce": "^2.8.3",
-    "xumm-sdk": "^1.11.1",
+    "xumm-sdk": "^1.11.2",
     "xumm-xapp-sdk": "^1.7.2"
   },
   "devDependencies": {
