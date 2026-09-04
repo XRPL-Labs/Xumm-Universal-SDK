@@ -69,7 +69,7 @@ interface Classes {
 }
 
 const uuidv4re = new RegExp(
-  "^[0-9(a-f|A-F)]{8}-[0-9(a-f|A-F)]{4}-4[0-9(a-f|A-F)]{3}-[89ab][0-9(a-f|A-F)]{3}-[0-9(a-f|A-F)]{12}$"
+  "^[0-9(a-f|A-F)]{8}-[0-9(a-f|A-F)]{4}-4[0-9(a-f|A-F)]{3}-[89ab][0-9(a-f|A-F)]{3}-[0-9(a-f|A-F)]{12}$",
 );
 
 const _classes: Classes = {};
@@ -93,7 +93,11 @@ Object.assign(_runtime, {
 
 const mockOtt = "00000000-1337-4000-9000-000000000000";
 let mockXappFromQuery = false;
-if (_runtime.browser && typeof navigator?.userAgent === "string") {
+if (
+  _runtime.browser &&
+  typeof navigator?.userAgent === "string" &&
+  typeof window !== "undefined"
+) {
   const xAppToken = (
     new URLSearchParams(location.search || "").get("xAppToken") || ""
   )
@@ -111,24 +115,24 @@ Object.assign(_runtime, {
 });
 
 const runtime = (Object.keys(_runtime) as (keyof typeof Runtimes)[]).filter(
-  (r) => _runtime[r]
+  (r) => _runtime[r],
 );
 
 export declare interface Xumm {
   on<U extends keyof UniversalSdkEvent>(
     event: U,
-    listener: UniversalSdkEvent[U]
+    listener: UniversalSdkEvent[U],
   ): this;
   on<U extends keyof xAppEvent>(event: U, listener: xAppEvent[U]): this;
   on<U extends keyof XummPkceEvent>(event: U, listener: XummPkceEvent[U]): this;
   off<U extends keyof UniversalSdkEvent>(
     event: U,
-    listener: UniversalSdkEvent[U]
+    listener: UniversalSdkEvent[U],
   ): this;
   off<U extends keyof xAppEvent>(event: U, listener: xAppEvent[U]): this;
   off<U extends keyof XummPkceEvent>(
     event: U,
-    listener: XummPkceEvent[U]
+    listener: XummPkceEvent[U],
   ): this;
 }
 
@@ -179,7 +183,7 @@ const Proxify = (ObjectToProxy: object) => {
             return obj.then((res: typeof obj) =>
               Asyncify(() => {
                 return res[prop as keyof typeof obj](...arguments);
-              })
+              }),
             );
           }
           return Asyncify(() => {
@@ -261,62 +265,62 @@ interface Environment {
 
 class UnifiedUserData {
   public account = Asyncify<string | undefined>(
-    () => _jwtData?.sub ?? _me?.sub ?? _ott?.account_info?.account
+    () => _jwtData?.sub ?? _me?.sub ?? _ott?.account_info?.account,
   );
   public picture = Asyncify<string | undefined>(
     () =>
       _me?.picture ??
-      (_jwtData?.sub ?? _me?.sub ?? _ott?.account_info?.account
+      ((_jwtData?.sub ?? _me?.sub ?? _ott?.account_info?.account)
         ? `https://xumm.app/avatar/${
             _jwtData?.sub ?? _me?.sub ?? _ott?.account_info?.account
           }.png`
-        : undefined)
+        : undefined),
   );
   public name = Asyncify<string | undefined>(
-    () => _me?.name ?? _ott?.account_info?.name
+    () => _me?.name ?? _ott?.account_info?.name,
   );
   public domain = Asyncify<string | undefined>(
-    () => _me?.domain ?? _ott?.account_info?.domain
+    () => _me?.domain ?? _ott?.account_info?.domain,
   );
   public source = Asyncify<string | undefined>(
-    () => _me?.source ?? _ott?.account_info?.source
+    () => _me?.source ?? _ott?.account_info?.source,
   );
   public networkType = Asyncify<string | undefined>(
     () =>
       (_me as Record<string, string>)?.networkType ??
       _jwtData.network_type ??
-      _ott?.nodetype
+      _ott?.nodetype,
   );
   public networkEndpoint = Asyncify<string | undefined>(
     () =>
       (_me as Record<string, string>)?.networkEndpoint ??
       _jwtData.network_endpoint ??
-      _ott?.nodewss
+      _ott?.nodewss,
   );
   public networkId = Asyncify<number | undefined>(
     () =>
       (_me as Record<string, number>)?.networkId ??
       _jwtData.network_id ??
-      _ott?.networkid
+      _ott?.networkid,
   );
   public blocked = Asyncify<boolean | undefined>(
-    () => _me?.blocked ?? _ott?.account_info?.blocked
+    () => _me?.blocked ?? _ott?.account_info?.blocked,
   );
   public kycApproved = Asyncify<boolean | undefined>(
-    () => _me?.kycApproved ?? _ott?.account_info?.kycApproved
+    () => _me?.kycApproved ?? _ott?.account_info?.kycApproved,
   );
   public proSubscription = Asyncify<boolean | undefined>(
-    () => _me?.proSubscription ?? _ott?.account_info?.proSubscription
+    () => _me?.proSubscription ?? _ott?.account_info?.proSubscription,
   );
   public profile = Asyncify<XummProfile | undefined>(
     () =>
       _me?.profile ??
       (_ott?.account_info?.profile?.slug
         ? (_ott.account_info.profile as XummProfile)
-        : undefined)
+        : undefined),
   );
   public token = Asyncify<string | null>(
-    () => _jwtData?.usertoken_uuidv4 ?? null
+    () => _jwtData?.usertoken_uuidv4 ?? null,
   );
 }
 
@@ -330,8 +334,8 @@ export class Xumm extends EventEmitter {
   public runtime: Runtime = _runtime;
 
   public state: {
-    account: string,
-    signedIn: boolean,
+    account: string;
+    signedIn: boolean;
   };
   public user: UnifiedUserData;
   public environment: Environment;
@@ -395,7 +399,7 @@ export class Xumm extends EventEmitter {
           console.log("JWT expired, falling back to API KEY: " + appId);
         if (_runtime.cli || _runtime.xapp) {
           const error = new Error(
-            "JWT Expired, cannot fall back to API credential: in CLI/xApp environment"
+            "JWT Expired, cannot fall back to API credential: in CLI/xApp environment",
           );
           this.emit("error", error);
           throw error;
@@ -420,21 +424,21 @@ export class Xumm extends EventEmitter {
       openid: Asyncify(() => _me) as Environment["openid"],
       bearer: Asyncify(() => _jwt),
       ready: new Promise((resolve) =>
-        this.on("ready", () => resolve(undefined))
+        this.on("ready", () => resolve(undefined)),
       ),
       success: new Promise((resolve) =>
-        this.on("success", () => resolve(undefined))
+        this.on("success", () => resolve(undefined)),
       ),
       retrieved: new Promise((resolve) =>
-        this.on("retrieved", () => resolve(undefined))
+        this.on("retrieved", () => resolve(undefined)),
       ),
       retrieving: new Promise((resolve) =>
-        this.on("retrieving", () => resolve(undefined))
+        this.on("retrieving", () => resolve(undefined)),
       ),
     };
 
     this.state = {
-      account: '',
+      account: "",
       signedIn: false,
     };
 
@@ -443,40 +447,41 @@ export class Xumm extends EventEmitter {
      */
     this.helpers = Proxify(
       Asyncify(
-        () => (_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt
-      )
+        () =>
+          (_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt,
+      ),
     );
 
     this.push = Proxify(
       Asyncify(
         () =>
           ((_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt)
-            .Push
-      )
+            .Push,
+      ),
     );
 
     this.payload = Proxify(
       Asyncify(
         () =>
           ((_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt)
-            .payload
-      )
+            .payload,
+      ),
     );
 
     this.userstore = Proxify(
       Asyncify(
         () =>
           ((_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt)
-            .jwtUserdata
-      )
+            .jwtUserdata,
+      ),
     );
 
     this.backendstore = Proxify(
       Asyncify(
         () =>
           ((_classes.XummSdk || _classes.XummSdkJwt) as unknown as XummSdkJwt)
-            .storage
-      )
+            .storage,
+      ),
     );
 
     /**
@@ -491,7 +496,7 @@ export class Xumm extends EventEmitter {
           ...readyPromises.filter(
             (p) =>
               (p as Record<string, any>)?.promiseType !==
-              "pkceRetrieverResolver"
+              "pkceRetrieverResolver",
           ),
           /**
            * If PKCE flow: wait for `ready` till account is known
@@ -507,7 +512,7 @@ export class Xumm extends EventEmitter {
                 }
               }),
         ]).then(() => this.emit("ready")), // Constructor ready
-      0
+      0,
     );
   }
 
@@ -621,7 +626,7 @@ export class Xumm extends EventEmitter {
             // Get OTT from UA if present, otherwise fall back to default behaviour
             typeof _classes?.xApp?.getEnvironment !== "undefined"
               ? _classes?.xApp?.getEnvironment()?.ott || undefined // Required as null breaks
-              : undefined
+              : undefined,
           ),
         });
 
@@ -638,7 +643,7 @@ export class Xumm extends EventEmitter {
         !(uuidv4re.test(this.apiKeyOrJwt) || this.jwtCredential)
       ) {
         throw new Error(
-          "Running in xApp, constructor requires first param. to be Xumm API Key or JWT"
+          "Running in xApp, constructor requires first param. to be Xumm API Key or JWT",
         );
       }
       if (!_classes?.xApp) {
@@ -658,7 +663,7 @@ export class Xumm extends EventEmitter {
         !(uuidv4re.test(this.apiKeyOrJwt) || this.jwtCredential)
       ) {
         throw new Error(
-          "Running in browser, constructor requires first param. to be Xumm API Key or JWT"
+          "Running in browser, constructor requires first param. to be Xumm API Key or JWT",
         );
       }
 
@@ -675,7 +680,7 @@ export class Xumm extends EventEmitter {
           } else {
             setTimeout(() => this.emit("retrieving"), 0);
             const handlePkceState = (
-              resolve: (value: ResolvedFlow | undefined) => void
+              resolve: (value: ResolvedFlow | undefined) => void,
             ) => {
               _classes.XummPkce?.state()?.then((state) => {
                 // state: jwt, me, sdk
@@ -705,13 +710,13 @@ export class Xumm extends EventEmitter {
                 _classes.XummPkce?.on("success", () => {
                   handlePkceState(resolve);
                 });
-              }
+              },
             );
 
             readyPromises.push(
               Object.assign(pkceRetrieverResolver, {
                 promiseType: "pkceRetrieverResolver",
-              })
+              }),
             );
           }
         }
@@ -722,7 +727,7 @@ export class Xumm extends EventEmitter {
        */
       if (typeof this.apiKeyOrJwt !== "string") {
         throw new Error(
-          "Running CLI, constructor needs first param. to be Xumm API Key / raw JWT"
+          "Running CLI, constructor needs first param. to be Xumm API Key / raw JWT",
         );
       } else {
         if (uuidv4re.test(this.apiKeyOrJwt)) {
@@ -732,7 +737,7 @@ export class Xumm extends EventEmitter {
             !uuidv4re.test(this.apiSecretOrOtt)
           ) {
             throw new Error(
-              "Running CLI, constructor first param. is API Key, but second param. isn't a valid API Secret"
+              "Running CLI, constructor first param. is API Key, but second param. isn't a valid API Secret",
             );
           }
         }
@@ -741,7 +746,7 @@ export class Xumm extends EventEmitter {
           this.apiKeyOrJwt.split(".").length !== 3
         ) {
           throw new Error(
-            "Running CLI, constructor first param. not a valid JWT, nor a valid API Key"
+            "Running CLI, constructor first param. not a valid JWT, nor a valid API Key",
           );
         }
 
@@ -753,7 +758,7 @@ export class Xumm extends EventEmitter {
             Object.assign(_classes, {
               XummSdk: new (require("xumm-sdk").XummSdk)(
                 this.apiKeyOrJwt,
-                this.apiSecretOrOtt
+                this.apiSecretOrOtt,
               ),
             });
           }
@@ -803,8 +808,8 @@ export class Xumm extends EventEmitter {
 
     let downgradeJwtLogin = false;
 
-    this.state.account = '';
-    this.state.signedIn = false
+    this.state.account = "";
+    this.state.signedIn = false;
 
     if (
       typeof this.apiKeyOrJwt === "string" &&
@@ -844,16 +849,16 @@ export class Xumm extends EventEmitter {
         openid: Asyncify(() => _me) as Environment["openid"],
         bearer: Asyncify(() => _jwt),
         ready: new Promise((resolve) =>
-          this.on("ready", () => resolve(undefined))
+          this.on("ready", () => resolve(undefined)),
         ),
         success: new Promise((resolve) =>
-          this.on("success", () => resolve(undefined))
+          this.on("success", () => resolve(undefined)),
         ),
         retrieved: new Promise((resolve) =>
-          this.on("retrieved", () => resolve(undefined))
+          this.on("retrieved", () => resolve(undefined)),
         ),
         retrieving: new Promise((resolve) =>
-          this.on("retrieving", () => resolve(undefined))
+          this.on("retrieving", () => resolve(undefined)),
         ),
       };
 
