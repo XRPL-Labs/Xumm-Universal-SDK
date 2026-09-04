@@ -91,11 +91,30 @@ Object.assign(_runtime, {
       (document as Document)?.location),
 });
 
+const mockOtt = "00000000-1337-4000-9000-000000000000";
+let mockXappFromQuery = false;
+if (
+  _runtime.browser &&
+  typeof navigator?.userAgent === "string" &&
+  typeof window !== "undefined" &&
+  typeof window.URLSearchParams !== "undefined"
+) {
+  const xAppToken = (
+    new window.URLSearchParams(window?.location?.search || "").get(
+      "xAppToken"
+    ) || ""
+  )
+    .trim()
+    .toLowerCase();
+  mockXappFromQuery = xAppToken === mockOtt;
+}
+
 Object.assign(_runtime, {
   xapp:
     _runtime.browser &&
     (!!navigator.userAgent.match(/xumm\/xapp/i) ||
-      !!navigator.userAgent.match(/xAppBuilder/i)),
+      !!navigator.userAgent.match(/xAppBuilder/i) ||
+      mockXappFromQuery),
 });
 
 const runtime = (Object.keys(_runtime) as (keyof typeof Runtimes)[]).filter(
