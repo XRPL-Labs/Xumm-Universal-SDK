@@ -1,6 +1,6 @@
 {
   "name": "xumm",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "description": "One Xumm SDK to rule them all (browser, backend, xApp)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -35,7 +35,7 @@
     "events": "^3.3.0",
     "xumm-oauth2-pkce": "^2.8.3",
     "xumm-sdk": "^1.11.2",
-    "xumm-xapp-sdk": "^1.7.2"
+    "xumm-xapp-sdk": "1.7.3"
   },
   "devDependencies": {
     "@types/jest": "^26.0.12",
