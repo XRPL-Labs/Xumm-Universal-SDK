@@ -93,16 +93,9 @@ Object.assign(_runtime, {
 
 const mockOtt = "00000000-1337-4000-9000-000000000000";
 let mockXappFromQuery = false;
-if (
-  _runtime.browser &&
-  typeof navigator?.userAgent === "string" &&
-  typeof window !== "undefined" &&
-  typeof window.URLSearchParams !== "undefined"
-) {
+if (_runtime.browser && typeof navigator?.userAgent === "string") {
   const xAppToken = (
-    new window.URLSearchParams(window?.location?.search || "").get(
-      "xAppToken"
-    ) || ""
+    new URLSearchParams(location.search || "").get("xAppToken") || ""
   )
     .trim()
     .toLowerCase();
