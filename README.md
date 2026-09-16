@@ -11,6 +11,6 @@ https://docs.xumm.dev
 
 ### CDN
 
-The CDN location for this pacakge for VannilaJS use: [here](https://xumm.app/assets/cdn/xumm.min.js).
+The CDN location for this package for Vanilla JS use: [here](https://xumm.app/assets/cdn/xumm.min.js).
 
 `https://xumm.app/assets/cdn/xumm.min.js`
